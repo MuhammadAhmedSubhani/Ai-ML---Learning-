@@ -1,3 +1,5 @@
+import heapq
+
 grid = [
     [0, 0, 0, 1, 0],   # 0 = walkable 
     [0, 1, 0, 1, 0],   # 1 = obstacle 
@@ -37,8 +39,44 @@ def next_moves(pos):
 
     return move
 
+def dijkstra():
+    priority_queue = []
+
+    heapq.heappush(priority_queue, (0, start))
+
+    distances = {
+        start: 0
+    }
+
+    parents = {}
+
+    expanded_nodes = 0
+
+    while priority_queue:
+        current_cost, current = heapq.heappop(priority_queue)
+        expanded_nodes += 1
+
+        if current == goal:
+            break
+
+        for neighbor in next_moves(current):
+            new_cost = current_cost + 1
+
+            if neighbor not in distances or new_cost < distances[neighbor]:
+                distances[neighbor] = new_cost
+                parents[neighbor] = current
+                heapq.heappush(
+                    priority_queue,
+                    (new_cost, neighbor)
+                )
+
+    return distances, parents, expanded_nodes
 
 def main():
-    print("Neighbors of start:", next_moves(start))
+    distances, parents, expanded_nodes = dijkstra()
+
+    print("Distance to goal:", distances.get(goal))
+    print("Expanded nodes:", expanded_nodes)
+    print("Parents:", parents)
 
 main()
