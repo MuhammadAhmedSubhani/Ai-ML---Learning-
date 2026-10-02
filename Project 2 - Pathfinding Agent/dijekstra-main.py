@@ -39,6 +39,19 @@ def next_moves(pos):
 
     return move
 
+def reconstruct_path(parents):
+    path = []
+    current = goal
+
+    while current != start:
+        path.append(current)
+        current = parents[current]
+
+    path.append(start)
+    path.reverse()
+
+    return path
+
 def dijkstra():
     priority_queue = []
 
@@ -72,11 +85,43 @@ def dijkstra():
 
     return distances, parents, expanded_nodes
 
+def print_grid(path):
+    path = set(path)
+
+    for row in range(len(grid)):
+        row_output = ""
+
+        for col in range(len(grid[0])):
+
+            position = (row, col)
+
+            if position == start:
+                row_output += "S "
+
+            elif position == goal:
+                row_output += "G "
+
+            elif grid[row][col] == 1:
+                row_output += "# "
+
+            elif position in path:
+                row_output += "* "
+
+            else:
+                row_output += ". "
+
+        print(row_output)
+
 def main():
     distances, parents, expanded_nodes = dijkstra()
 
+    path = reconstruct_path(parents)
+
     print("Distance to goal:", distances.get(goal))
     print("Expanded nodes:", expanded_nodes)
-    print("Parents:", parents)
+    print("Path:", path)
+
+    print("\nDijkstra Path:")
+    print_grid(path)
 
 main()
