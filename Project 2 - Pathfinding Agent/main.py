@@ -9,7 +9,7 @@ grid = [
 start = (0, 0)
 goal = (4,4)
 
-def moves( row, col ):
+def valid_moves( row, col ):
     if row < 0 or row >= len(grid): # row out of bounds check
         return False
     elif col < 0 or col >= len(grid): # col out of bounds check
@@ -18,9 +18,27 @@ def moves( row, col ):
         return False
     else:
         return True
+
+def next_moves(pos):
+    row,col = pos
+    directions = [
+        (-1,0), #Up
+        (1,0), # Down
+        (0,-1), #Left
+        (0, 1) #Right
+    ]
+    move = []
+    for row_change, col_change in directions:
+        new_row = row + row_change
+        new_col = col + col_change
+
+        if valid_moves(new_row, new_col):
+            move.append((new_row, new_col))
+
+    return move
+
+
 def main():
-    print(moves(0, 0))
-    print(moves(1, 1))
-    print(moves(5, 5))
+    print("Neighbors of start:", next_moves(start))
 
 main()
