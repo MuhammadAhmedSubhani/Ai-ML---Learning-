@@ -1,3 +1,11 @@
+# A* Algorithm Implementation
+
+# Functions in the code:
+# valid_moves() - Checks if a move is valid (within bounds and not an obstacle)
+# next_moves() - Returns a list of valid moves from the current position
+# dijkstra() - Implementation of Dijkstra's algorithm
+# a_star() - Implementation of the A* algorithm
+
 import heapq
 import time
 
