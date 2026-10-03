@@ -14,7 +14,7 @@ goal = (4,4)
 def valid_moves( row, col ):
     if row < 0 or row >= len(grid): # row out of bounds check
         return False
-    elif col < 0 or col >= len(grid): # col out of bounds check
+    elif col < 0 or col >= len(grid[0]): # col out of bounds check
         return False
     elif grid[row][col] == 1: # Obstacle detection
         return False
