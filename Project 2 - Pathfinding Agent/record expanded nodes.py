@@ -183,6 +183,34 @@ def print_grid(path):
 
         print(row_output)
 
+def print_search_visualization(expanded_nodes, path):
+    expanded_nodes = set(expanded_nodes)
+    path = set(path)
+
+    print()
+
+    for row in range(len(grid)):
+        row_output = ""
+
+        for col in range(len(grid[0])):
+
+            position = (row, col)
+
+            if position == start:
+                row_output += "S " # S = Start
+            elif position == goal:
+                row_output += "G " # G = Goal
+            elif grid[row][col] == 1:
+                row_output += "# "   # # = Obstacle
+            elif position in path:
+                row_output += "* " # * = Path
+            elif position in expanded_nodes:
+                row_output += "E " # E = Expanded
+            else:
+                row_output += ". "  # . = Unvisited walkable cell
+
+        print(row_output)
+
 def dijkstra():
     priority_queue = []
 
@@ -294,11 +322,12 @@ def expanded_node_density(expanded_nodes): # counts the number of expanded nodes
     return (expanded_nodes / total_walkable) * 100
 
 def benchmark():
+
     global grid, start, goal
 
     for maze_number, maze in enumerate(mazes, start=1):
 
-        # Load the current maze configuration
+        # Load the current maze
         grid = maze["grid"]
         start = maze["start"]
         goal = maze["goal"]
@@ -335,9 +364,13 @@ def benchmark():
         # Calculate densities
         # -------------------------
 
-        dijkstra_density = expanded_node_density(len(expanded_dijkstra))
+        dijkstra_density = expanded_node_density(
+            len(expanded_dijkstra)
+        )
 
-        a_star_density = expanded_node_density(len(expanded_a_star))
+        a_star_density = expanded_node_density(
+            len(expanded_a_star)
+        )
 
         # -------------------------
         # Display Dijkstra results
@@ -352,7 +385,11 @@ def benchmark():
 
         print("Expanded nodes:", len(expanded_dijkstra))
         print("Runtime:", dijkstra_time, "seconds")
-        print("Expanded node density:", dijkstra_density, "%")
+        print(
+            "Expanded node density:",
+            round(dijkstra_density, 2),
+            "%"
+        )
 
         # -------------------------
         # Display A* results
@@ -367,7 +404,181 @@ def benchmark():
 
         print("Expanded nodes:", len(expanded_a_star))
         print("Runtime:", a_star_time, "seconds")
-        print("Expanded node density:", a_star_density, "%")
+        print(
+            "Expanded node density:",
+            round(a_star_density, 2),
+            "%"
+        )
 
+def visualize_maze(maze_index):
+
+    global grid, start, goal
+
+    # Load selected maze
+    maze = mazes[maze_index]
+
+    grid = maze["grid"]
+    start = maze["start"]
+    goal = maze["goal"]
+
+    print("\n==============================")
+    print(maze["name"])
+    print("==============================")
+
+    # -------------------------
+    # Dijkstra visualization
+    # -------------------------
+
+    distances_dijkstra, parents_dijkstra, expanded_dijkstra = dijkstra()
+
+    dijkstra_path = reconstruct_path(parents_dijkstra)
+
+    print("\n===== DIJKSTRA SEARCH =====")
+
+    if dijkstra_path:
+        print("Path length:", len(dijkstra_path) - 1)
+    else:
+        print("No path found.")
+
+    print_search_visualization(
+        expanded_dijkstra,
+        dijkstra_path
+    )
+
+    # -------------------------
+    # A* visualization
+    # -------------------------
+
+    distances_a_star, parents_a_star, expanded_a_star = a_star()
+
+    a_star_path = reconstruct_path(parents_a_star)
+
+    print("\n===== A* SEARCH =====")
+
+    if a_star_path:
+        print("Path length:", len(a_star_path) - 1)
+    else:
+        print("No path found.")
+
+    print_search_visualization(
+        expanded_a_star,
+        a_star_path
+    )
+
+def save_visualization(maze_index):
+
+    global grid, start, goal
+
+    maze = mazes[maze_index]
+
+    grid = maze["grid"]
+    start = maze["start"]
+    goal = maze["goal"]
+
+    filename = f"maze_{maze_index + 1}_visualization.txt"
+
+    with open(filename, "w") as file:
+
+        file.write("==============================\n")
+        file.write(maze["name"] + "\n")
+        file.write("==============================\n\n")
+
+        # Dijkstra
+
+        distances_dijkstra, parents_dijkstra, expanded_dijkstra = dijkstra()
+
+        dijkstra_path = reconstruct_path(parents_dijkstra)
+
+        file.write("===== DIJKSTRA SEARCH =====\n")
+
+        if dijkstra_path:
+            file.write(
+                f"Path length: {len(dijkstra_path) - 1}\n\n"
+            )
+        else:
+            file.write("No path found.\n\n")
+
+        expanded_set = set(expanded_dijkstra)
+        path_set = set(dijkstra_path)
+
+        for row in range(len(grid)):
+
+            row_output = ""
+
+            for col in range(len(grid[0])):
+
+                position = (row, col)
+
+                if position == start:
+                    row_output += "S "
+
+                elif position == goal:
+                    row_output += "G "
+
+                elif grid[row][col] == 1:
+                    row_output += "# "
+
+                elif position in path_set:
+                    row_output += "* "
+
+                elif position in expanded_set:
+                    row_output += "E "
+
+                else:
+                    row_output += ". "
+
+            file.write(row_output + "\n")
+
+        file.write("\n")
+
+        # A*
+
+        distances_a_star, parents_a_star, expanded_a_star = a_star()
+
+        a_star_path = reconstruct_path(parents_a_star)
+
+        file.write("===== A* SEARCH =====\n")
+
+        if a_star_path:
+            file.write(
+                f"Path length: {len(a_star_path) - 1}\n\n"
+            )
+        else:
+            file.write("No path found.\n\n")
+
+        expanded_set = set(expanded_a_star)
+        path_set = set(a_star_path)
+
+        for row in range(len(grid)):
+
+            row_output = ""
+
+            for col in range(len(grid[0])):
+
+                position = (row, col)
+
+                if position == start:
+                    row_output += "S "
+
+                elif position == goal:
+                    row_output += "G "
+
+                elif grid[row][col] == 1:
+                    row_output += "# "
+
+                elif position in path_set:
+                    row_output += "* "
+
+                elif position in expanded_set:
+                    row_output += "E "
+
+                else:
+                    row_output += ". "
+
+            file.write(row_output + "\n")
+
+    print(f"\nVisualization saved: {filename}")    
 
 benchmark()
+visualize_maze(3)
+save_visualization(3)
