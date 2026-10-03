@@ -186,35 +186,33 @@ def print_grid(path):
 def dijkstra():
     priority_queue = []
 
-    # Start with cost 0
     heapq.heappush(priority_queue, (0, start))
 
     distances = {start: 0}
     parents = {}
 
-    expanded_nodes = 0
+    # Store every node that Dijkstra expands
+    expanded_nodes = []
 
     while priority_queue:
 
         current_cost, current = heapq.heappop(priority_queue)
 
-        # Ignore outdated/stale queue entries
+        # Ignore outdated queue entries
         if current_cost != distances[current]:
             continue
 
-        # Count only genuine node expansions
-        expanded_nodes += 1
+        # Record this node as expanded
+        expanded_nodes.append(current)
 
-        # Stop when we reach the goal
+        # Stop when goal is reached
         if current == goal:
             break
 
-        # Check all valid neighboring cells
         for neighbor in next_moves(current):
 
             new_cost = current_cost + 1
 
-            # If this is a new node or we found a cheaper path
             if neighbor not in distances or new_cost < distances[neighbor]:
 
                 distances[neighbor] = new_cost
@@ -235,42 +233,46 @@ def heuristic(position):
 
 def a_star():
     priority_queue = []
+
     start_g = 0
     start_h = heuristic(start)
     start_f = start_g + start_h
+
     heapq.heappush(priority_queue, (start_f, start))
 
-    distances = {
-        start: 0
-    }
-
+    distances = {start: 0}
     parents = {}
 
-    expanded_nodes = 0
+    # Store every node that A* expands
+    expanded_nodes = []
 
     while priority_queue:
+
         current_f, current = heapq.heappop(priority_queue)
 
-        # Calculate the actual g-cost represented by this queue entry
         current_g = distances[current]
-
-        # Ignore outdated queue entries
         expected_f = current_g + heuristic(current)
 
+        # Ignore outdated queue entries
         if current_f != expected_f:
             continue
 
-        expanded_nodes += 1
+        # Record this node as expanded
+        expanded_nodes.append(current)
 
+        # Stop when goal is reached
         if current == goal:
             break
 
         for neighbor in next_moves(current):
+
             new_g = current_g + 1
 
             if neighbor not in distances or new_g < distances[neighbor]:
+
                 distances[neighbor] = new_g
                 parents[neighbor] = current
+
                 h = heuristic(neighbor)
                 f = new_g + h
 
@@ -333,9 +335,9 @@ def benchmark():
         # Calculate densities
         # -------------------------
 
-        dijkstra_density = expanded_node_density(expanded_dijkstra)
+        dijkstra_density = expanded_node_density(len(expanded_dijkstra))
 
-        a_star_density = expanded_node_density(expanded_a_star)
+        a_star_density = expanded_node_density(len(expanded_a_star))
 
         # -------------------------
         # Display Dijkstra results
@@ -348,7 +350,7 @@ def benchmark():
         else:
             print("No path found.")
 
-        print("Expanded nodes:", expanded_dijkstra)
+        print("Expanded nodes:", len(expanded_dijkstra))
         print("Runtime:", dijkstra_time, "seconds")
         print("Expanded node density:", dijkstra_density, "%")
 
@@ -363,7 +365,7 @@ def benchmark():
         else:
             print("No path found.")
 
-        print("Expanded nodes:", expanded_a_star)
+        print("Expanded nodes:", len(expanded_a_star))
         print("Runtime:", a_star_time, "seconds")
         print("Expanded node density:", a_star_density, "%")
 
