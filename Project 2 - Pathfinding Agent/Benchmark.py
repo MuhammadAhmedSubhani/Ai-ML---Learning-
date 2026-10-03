@@ -80,6 +80,39 @@ def print_grid(path):
 
         print(row_output)
 
+def dijkstra():
+    priority_queue = []
+
+    heapq.heappush(priority_queue, (0, start))
+
+    distances = {
+        start: 0
+    }
+
+    parents = {}
+
+    expanded_nodes = 0
+
+    while priority_queue:
+        current_cost, current = heapq.heappop(priority_queue)
+        expanded_nodes += 1
+
+        if current == goal:
+            break
+
+        for neighbor in next_moves(current):
+            new_cost = current_cost + 1
+
+            if neighbor not in distances or new_cost < distances[neighbor]:
+                distances[neighbor] = new_cost
+                parents[neighbor] = current
+                heapq.heappush(
+                    priority_queue,
+                    (new_cost, neighbor)
+                )
+
+    return distances, parents, expanded_nodes
+
 def heuristic(position):
     row, col = position
     goal_row, goal_col = goal
@@ -134,16 +167,48 @@ def a_star():
 
     return distances, parents, expanded_nodes
 
-def main():
-    distances, parents, expanded_nodes = a_star()
+def expanded_node_density(expanded_nodes): # counts the number of expanded nodes and divides it by the total number of walkable nodes in the grid to get a percentage
+    total_walkable = 0
 
-    path = reconstruct_path(parents)
+    for row in grid:
+        for cell in row:
+            if cell == 0:
+                total_walkable += 1
 
-    print("A* Distance to goal:", distances.get(goal))
-    print("A* Expanded nodes:", expanded_nodes)
-    print("A* Path:", path)
+    return (expanded_nodes / total_walkable) * 100
 
-    print("\nA* Path:")
-    print_grid(path)
+def benchmark():
+    # Run Dijkstra
+    start_time = time.perf_counter()
 
-main()
+    distances_dijkstra, parents_dijkstra, expanded_dijkstra = dijkstra()
+
+    dijkstra_time = time.perf_counter() - start_time
+
+    dijkstra_path = reconstruct_path(parents_dijkstra)
+
+    # Run A*
+    start_time = time.perf_counter()
+
+    distances_a_star, parents_a_star, expanded_a_star = a_star()
+
+    a_star_time = time.perf_counter() - start_time
+
+    a_star_path = reconstruct_path(parents_a_star)
+    dijkstra_density = expanded_node_density(expanded_dijkstra)
+    a_star_density = expanded_node_density(expanded_a_star)
+
+    # Print results
+    print("\nDijkstra:")
+    print("Path length:", len(dijkstra_path) - 1)
+    print("Expanded nodes:", expanded_dijkstra)
+    print("Runtime:", dijkstra_time, "seconds")
+    print("Expanded node density:", dijkstra_density, "%")
+
+    print("\nA*:")
+    print("Path length:", len(a_star_path) - 1)
+    print("Expanded nodes:", expanded_a_star)
+    print("Runtime:", a_star_time, "seconds")
+    print("Expanded node density:", a_star_density, "%")
+
+benchmark()
